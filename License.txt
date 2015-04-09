@@ -1,0 +1,36 @@
+------= GabScreenshot license =------
+
+---= ENGLISH =---
+
+GabScreenshot homepage : http://www.gabsoftware.com/products/utilities/gabscreenshot/
+
+By distributing, using or reusing any part of this product (binaries or source code), you agree with the following terms :
+
+- GabScreenshot binaries can be distributed and used for free, except for corporate use (1).
+- GabScreenshot source code can be distributed, used and reused for free, except for corporate use (2).
+- You must include the present license unmodified (License.txt) with any distribution, part of source code or binaries of GabScreenshot.
+
+(1) : If you want to use GabScreenshot in your company, please send us your request at gabriel@gabsoftware.com.
+(2) : If you want to include some parts of GabScreenshot source code in your company products, please send us your request at gabriel@gabsoftware.com.
+
+Thank you for using our products !
+
+GabSoftware
+
+
+---= FRANÇAIS =---
+
+Page d'accueil de GabScreenshot : http://www.gabsoftware.com/products/utilities/gabscreenshot/
+
+Par la distribution, l'utilisation ou la réutilisation de tout ou partie de ce produit (exécutables ou code source), vous acceptez les conditions suivantes :
+
+- Les exécutables de GabScreenshot peuvent être distribuées et utilisées gratuitement, sauf par les entreprises (1).
+- Le code source de GabScreenshot peut être distribué, utilisé et réutilisé gratuitement, sauf par les entreprises (2).
+- Vous devez inclure la présente licence non-modifiée (License.txt) conjointement à toute distribution, partie du code source ou exécutables de GabScreenshot.
+
+(1) : Si vous désirez utiliser GabScreenshot dans votre entreprise, envoyez-nous votre requête à gabriel@gabsoftware.com.
+(2) : Si vous souhaitez inclure tout ou partie du code source de GabScreenshot dans les produits de votre entreprise, envoyez-nous votre requête à gabriel@gabsoftware.com.
+
+Merci d'utiliser nos produits !
+
+GabSoftware

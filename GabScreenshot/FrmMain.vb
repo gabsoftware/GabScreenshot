@@ -1,0 +1,595 @@
+﻿Imports GabSoftware.Utils
+Imports System.Runtime.InteropServices
+Imports System.Threading
+Imports System.Text
+Imports System.Diagnostics
+
+Public Class FrmMain
+
+    ''' <summary>
+    ''' objet qui capture les touches du clavier
+    ''' </summary>
+    ''' <remarks></remarks>
+    Friend WithEvents keyHook As GabKeyboardHook
+
+    Private firstPosition As Point
+    Private lastPosition As Point
+    Private rect As Rectangle
+
+    Private bg As BufferedGraphics
+    Private bgc As New BufferedGraphicsContext()
+    Private g1 As Graphics
+
+    <DllImport("user32.dll", SetLastError:=True)> _
+    Private Shared Function GetForegroundWindow() As IntPtr
+    End Function
+
+    <DllImport("user32.dll")> _
+    Public Shared Function GetWindowRect(ByVal hWnd As IntPtr, ByRef lpRect As RECTW32) As Boolean
+    End Function
+
+    Public Enum eCaptureMode
+        WholeScreen
+        CurrentWindow
+        SelectedRegion
+        None
+    End Enum
+    Private CaptureMode As eCaptureMode = eCaptureMode.None
+
+    ''' <summary>
+    ''' Type de captures
+    ''' </summary>
+    Public Enum ScreenShotType
+        VirtualScreen
+        PrimaryScreen
+        WorkingArea
+    End Enum
+
+    'Private Const WS_EX_LAYERED = &H80000
+    'Private Const WS_EX_NOACTIVATE = &H8000000
+    'Private Const WS_EX_TOOLWINDOW = &H80
+    'Private Const WS_EX_TRANSPARENT = &H20
+    'Protected Overloads Overrides ReadOnly Property CreateParams() As CreateParams
+    '    Get
+    '        Dim baseParams As CreateParams = MyBase.CreateParams
+
+    '        'baseParams.ExStyle = baseParams.ExStyle Or CInt((WS_EX_LAYERED Or WS_EX_TRANSPARENT Or WS_EX_NOACTIVATE Or WS_EX_TOOLWINDOW))
+
+    '        Return baseParams
+    '    End Get
+    'End Property
+
+    ''' <summary>
+    ''' Effectue une capture d'écran 
+    ''' </summary>
+    ''' <param name="type">Type de capture</param>
+    ''' <returns>Bitmap représentant la capture d'écran</returns>
+    Public Function sCapture(ByVal type As ScreenShotType) As Bitmap
+        'Dim bitmap As Bitmap = Nothing
+        Dim rect As Rectangle
+
+        Try
+            Select Case type
+                Case ScreenShotType.PrimaryScreen
+                    rect = Screen.PrimaryScreen.Bounds
+
+                Case ScreenShotType.VirtualScreen
+                    rect = SystemInformation.VirtualScreen
+
+                Case ScreenShotType.WorkingArea
+                    rect = Screen.PrimaryScreen.WorkingArea
+
+                Case Else
+
+            End Select
+
+            'Bitmap = sCapture(rect)
+            sCapture = sCapture(rect)
+        Catch ex As Exception
+            Throw ex
+        End Try
+
+        ' retourne la capture
+        'Return bitmap
+    End Function
+
+    ''' <summary>
+    ''' Capture l'affichage de l'écran dont l'identifiant est 
+    ''' passé en paramètre
+    ''' </summary>
+    ''' <param name="screen__1">Identifiant de l'écran</param>
+    ''' <returns>Bitmap représentant la capture d'écran</returns>
+    Public Function sCaptureScreen(ByVal screen__1 As Integer) As Bitmap
+        If screen__1 > Screen.AllScreens.Length Then
+            Throw New OverflowException("Screen n°" & screen__1 & " does not exist !")
+        End If
+        Return sCapture(Screen.AllScreens(screen__1).Bounds)
+    End Function
+
+    ''' <summary>
+    ''' Capture la réprésentation graphique du Control
+    ''' </summary>
+    ''' <param name="control">Control à capturer</param>
+    ''' <returns>Bitmap de la capture</returns>
+    Public Function sCapture(ByVal control As Control) As Bitmap
+        Return sCapture(control.RectangleToScreen(control.ClientRectangle))
+    End Function
+
+    ''' <summary>
+    ''' Capture la réprésentation graphique du formulaire
+    ''' </summary>
+    ''' <param name="form">Formulaire à capturer</param>
+    ''' <returns>Bitmap de la capture</returns>
+    Public Function sCapture(ByVal form As Form) As Bitmap
+        Return sCapture(form, False)
+    End Function
+
+    ''' <summary>
+    ''' Capture la réprésentation graphique du formulaire<br />
+    ''' Si clientZoneOnly = true, seule la zone client sera capturée
+    ''' </summary>
+    ''' <param name="form">Formulaire à capturer</param>
+    ''' <param name="clientZoneOnly">Capturer que la zone cliente ?</param>
+    ''' <returns>Bitmap de la capture</returns>
+    Public Function sCapture(ByVal form As Form, ByVal clientZoneOnly As Boolean) As Bitmap
+        'Dim bitmap As Bitmap = Nothing
+
+        If clientZoneOnly Then
+            'bitmap = sCapture(form.RectangleToScreen(form.ClientRectangle))
+            sCapture = sCapture(form.RectangleToScreen(form.ClientRectangle))
+        Else
+            'bitmap = sCapture(form.Bounds)
+            sCapture = sCapture(form.Bounds)
+        End If
+        'Return bitmap
+    End Function
+
+    ''' <summary>
+    ''' Capture la zone de l'écran spécifiée
+    ''' </summary>
+    ''' <param name="rect">Zone de l'écran à capturer</param>
+    ''' <returns>Bitmap représentant la capture</returns>
+    Private Function scapture(ByVal rect As Rectangle) As Bitmap
+
+        'Dim bitmap As New Bitmap(rect.Width, rect.Height, Imaging.PixelFormat.Format32bppArgb)
+        scapture = New Bitmap(rect.Width, rect.Height, Imaging.PixelFormat.Format32bppArgb)
+
+        'Using g As Graphics = Graphics.FromImage(Bitmap)
+        Using g As Graphics = Graphics.FromImage(scapture)
+            g.CopyFromScreen(rect.Left, rect.Top, 0, 0, rect.Size, CopyPixelOperation.SourceCopy)
+        End Using
+
+        'Return Bitmap
+    End Function
+
+
+    ''' <summary>
+    ''' Capture la fenêtre correspondant au handle spécifié
+    ''' </summary>
+    ''' <param name="hwnd">Handle de la fenêtre à capturer</param>
+    ''' <returns>Bitmap représentant la capture</returns>
+    Private Function scapture(ByVal hwnd As IntPtr) As Bitmap
+        'Obtain the handle of the active window.
+        Dim win32rect As RECTW32
+        'Dim bitmap As New Bitmap(1, 1)
+        scapture = New Bitmap(1, 1)
+        If GetWindowRect(hwnd, win32rect) Then
+            rect = win32rect.ToRectangle()
+            'bitmap = New Bitmap(rect.Width, rect.Height, Imaging.PixelFormat.Format32bppArgb)
+            'Dim g As Graphics = Graphics.FromImage(Bitmap)
+            scapture = New Bitmap(rect.Width, rect.Height, Imaging.PixelFormat.Format32bppArgb)
+            Dim g As Graphics = Graphics.FromImage(scapture)
+            g.CopyFromScreen(rect.Left, rect.Top, 0, 0, rect.Size, CopyPixelOperation.SourceCopy)
+            g.Dispose()
+
+        End If
+
+
+        'Return bitmap
+
+    End Function
+
+    Private Sub FrmMain_FormClosed(ByVal sender As Object, ByVal e As System.Windows.Forms.FormClosedEventArgs) Handles Me.FormClosed
+        'on désinstalle le hook du clavier
+        Me.keyHook.Stop(True, False)
+    End Sub
+
+
+
+
+
+    Private Sub FrmMain_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+
+        'On met les threads de l'application en basse priorité pour ne pas déranger le système
+        For Each t As System.Diagnostics.ProcessThread In System.Diagnostics.Process.GetCurrentProcess().Threads
+            t.PriorityLevel = ThreadPriorityLevel.Lowest 'we don't want our application to eat too much processor time !
+        Next
+        System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle 'same here !
+        System.Diagnostics.Process.GetCurrentProcess().PriorityBoostEnabled = True 'but prioritize when needed
+
+        'On capture toutes les touches même si on a pas le focus
+        Me.keyHook = New GabKeyboardHook(True)
+
+        'On recherche le répertoire Mes images si aucun chemin valide n'est trouvé
+        If My.Settings.GS_Setting_SavePath = "" Or Not IO.Directory.Exists(My.Settings.GS_Setting_SavePath) Then
+            My.Settings.GS_Setting_SavePath = Microsoft.VisualBasic.FileIO.SpecialDirectories.MyPictures
+            My.Settings.Save()
+        End If
+
+    End Sub
+
+    Private Sub ExitToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ExitToolStripMenuItem.Click
+
+        'On doit fermer !
+        Application.Exit()
+    End Sub
+
+    Public Sub New()
+
+        ' This call is required by the Windows Form Designer.
+        InitializeComponent()
+        ' Add any initialization after the InitializeComponent() call.
+
+        Me.SetStyle(ControlStyles.OptimizedDoubleBuffer, True)
+
+    End Sub
+
+    Private Sub FrmMain_MouseDown(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseDown
+
+        If CaptureMode = eCaptureMode.SelectedRegion AndAlso e.Button = Windows.Forms.MouseButtons.Left AndAlso firstPosition = Nothing Then
+            'If firstPosition = Nothing Then
+
+            firstPosition = Me.PointToScreen(e.Location)
+
+            'End If
+        End If
+
+
+    End Sub
+
+    Private Sub FrmMain_MouseMove(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseMove
+
+        Dim tmppt As Point
+        'Dim effacerect As Rectangle
+        Dim strbld As StringBuilder
+        Dim strres As String
+        Dim textsizef As SizeF
+        Dim x As Integer
+        Dim y As Integer
+
+        If CaptureMode = eCaptureMode.SelectedRegion And e.Button = Windows.Forms.MouseButtons.Left Then
+
+
+            If lastPosition <> Nothing Then
+
+                tmppt = Me.PointToScreen(e.Location)
+
+                If lastPosition.X <> tmppt.X Or lastPosition.Y <> tmppt.Y Then
+
+                    lastPosition = New Point(tmppt.X, tmppt.Y)
+
+                Else
+                    Exit Sub
+                End If
+            Else
+
+                lastPosition = Me.PointToScreen(e.Location)
+
+            End If
+
+
+
+            If firstPosition <> Nothing Then
+
+                If lastPosition.X > firstPosition.X Then
+                    If lastPosition.Y > firstPosition.Y Then
+                        rect = New Rectangle(firstPosition.X, firstPosition.Y, lastPosition.X - firstPosition.X, lastPosition.Y - firstPosition.Y)
+                    Else
+                        rect = New Rectangle(firstPosition.X, lastPosition.Y, lastPosition.X - firstPosition.X, firstPosition.Y - lastPosition.Y)
+                    End If
+                Else
+                    If lastPosition.Y > firstPosition.Y Then
+                        rect = New Rectangle(lastPosition.X, firstPosition.Y, firstPosition.X - lastPosition.X, lastPosition.Y - firstPosition.Y)
+                    Else
+                        rect = New Rectangle(lastPosition.X, lastPosition.Y, firstPosition.X - lastPosition.X, firstPosition.Y - lastPosition.Y)
+                    End If
+                End If
+
+
+                'effacerect = New Rectangle(rect.X - 40, rect.Y - 40, rect.Width + 80, rect.Height + 80)
+
+                'Dim g1 As Graphics
+
+
+
+                strbld = New StringBuilder(rect.Width.ToString())
+                strbld.Append("x")
+                strbld.Append(rect.Height)
+                strres = strbld.ToString()
+
+                g1 = Graphics.FromHwnd(Me.Handle)
+
+                bg = bgc.Allocate(g1, Me.Bounds)
+                bg.Graphics.FillRectangle(New SolidBrush(Me.BackColor), Me.Bounds)
+                bg.Graphics.DrawRectangle(New Pen(Color.Black, 2), rect)
+                bg.Graphics.FillRectangle(Brushes.Red, rect)
+
+                textsizef = bg.Graphics.MeasureString(strres, Me.Font)
+                x = CInt(rect.X + ((rect.Width / 2) - (textsizef.Width / 2)))
+                y = CInt(rect.Y + ((rect.Height / 2) - (textsizef.Height / 2)))
+
+                bg.Graphics.FillRectangle(Brushes.White, x, y, textsizef.Width, textsizef.Height)
+                bg.Graphics.DrawString(strres, Me.Font, Brushes.Black, x, y)
+
+                bg.Render()
+                bg.Dispose()
+
+                g1.Dispose()
+
+            End If
+        End If
+
+    End Sub
+
+    Private Sub FrmMain_MouseUp(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseUp
+
+        If CaptureMode = eCaptureMode.SelectedRegion And e.Button = Windows.Forms.MouseButtons.Left Then
+
+            'on cache la fenêtre
+            Me.Invalidate()
+            Me.Hide()
+
+            If firstPosition <> Nothing And lastPosition <> Nothing Then
+                'on a un rectangle à capturer !
+
+                'On capture la portion de l'écran dans un bitmap
+                Dim objBitmap As Bitmap = sCapture(rect)
+
+                'Enregistre le bitmap dans un fichier
+                Save(objBitmap)
+
+                objBitmap.Dispose()
+
+
+            End If
+            Cursor = Cursors.Default
+            CaptureMode = eCaptureMode.None
+            firstPosition = Nothing
+            lastPosition = Nothing
+
+        End If
+
+    End Sub
+
+    Private Sub FrmMain_Shown(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Shown
+        Me.NI.Visible = True
+        Me.Hide()
+        If My.Settings.GS_Setting_ShowTooltip = True Then
+            Me.NI.ShowBalloonTip(5000)
+        End If
+
+    End Sub
+
+    Private Sub keyHook_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles keyHook.KeyDown
+        Me.SetKeyboardActions(e, Me.ContainsFocus)
+    End Sub
+
+    Private Sub SetKeyboardActions(ByVal touche As System.Windows.Forms.KeyEventArgs, ByVal hasFocus As Boolean)
+
+
+        If CaptureMode = eCaptureMode.SelectedRegion Then
+            CaptureMode = eCaptureMode.None
+            lastPosition = Nothing
+            firstPosition = Nothing
+            Cursor = Cursors.Default
+            Me.Hide()
+            Exit Sub
+        End If
+
+        If touche.KeyCode = Keys.PrintScreen And touche.Shift Then
+            'on active le mode sélection de portion de l'écran
+            Me.Show()
+            CaptureMode = eCaptureMode.SelectedRegion
+            touche.Handled = True
+            Cursor = Cursors.Cross
+
+        ElseIf touche.KeyCode = Keys.PrintScreen And touche.Alt Then
+            'on ne capture que la fenêtre en cours
+            CaptureMode = eCaptureMode.CurrentWindow
+
+            'Obtain the handle of the active window.
+            Dim handle As IntPtr = GetForegroundWindow()
+
+            Dim objBitmap As Bitmap = sCapture(handle)
+
+            'Enregistre le bitmap dans un fichier
+            Save(objBitmap)
+            objBitmap.Dispose()
+
+            touche.Handled = True
+
+        ElseIf touche.KeyCode = Keys.PrintScreen And touche.Control Then
+            CaptureMode = eCaptureMode.WholeScreen
+            touche.Handled = True
+
+            'capture le rectangle de l'écran
+            Dim objRectangle As Rectangle = Screen.PrimaryScreen.Bounds
+
+            'capture l'écran dans un bitmap
+            Dim objBitmap As Bitmap = sCapture(ScreenShotType.VirtualScreen)
+
+            'Enregistre le bitmap dans un fichier
+            Save(objBitmap)
+
+            objBitmap.Dispose()
+
+        End If
+    End Sub
+
+    Private Sub Save(ByRef myBitmap As Bitmap)
+
+        Dim f As Imaging.ImageFormat
+        Select Case My.Settings.GS_Setting_FileType.ToLower
+            Case "jpeg"
+                f = Imaging.ImageFormat.Jpeg
+
+            Case "png"
+                f = Imaging.ImageFormat.Png
+
+            Case "gif"
+                f = Imaging.ImageFormat.Gif
+
+            Case "bmp"
+                f = Imaging.ImageFormat.Bmp
+
+            Case "emf"
+                f = Imaging.ImageFormat.Emf
+
+            Case "wmf"
+                f = Imaging.ImageFormat.Wmf
+
+            Case "tiff"
+                f = Imaging.ImageFormat.Tiff
+
+            Case "icon"
+                f = Imaging.ImageFormat.Icon
+
+            Case Else
+                f = Imaging.ImageFormat.Png
+        End Select
+
+        Save(myBitmap, f)
+
+    End Sub
+
+    Private Sub Save(ByRef myBitmap As Bitmap, ByRef format As Imaging.ImageFormat)
+
+        Dim num As Integer = 1
+        'Dim str As String
+        Dim ext As String
+        Dim builder As New System.Text.StringBuilder()
+
+
+        Select Case format.ToString.ToLower()
+
+            Case "jpeg"
+                ext = ".jpg"
+
+            Case "png"
+                ext = ".png"
+
+            Case "gif"
+                ext = ".gif"
+
+            Case "bmp"
+                ext = ".bmp"
+
+            Case "emf"
+                ext = ".emf"
+
+            Case "wmf"
+                ext = ".wmf"
+
+            Case "tiff"
+                ext = ".tif"
+
+            Case "icon"
+                ext = ".ico"
+
+            Case Else
+                ext = ".jpg"
+
+        End Select
+
+        builder.Append(My.Settings.GS_Setting_SavePath)
+        builder.Append("\")
+        builder.Append(My.Settings.GS_Setting_FilenamePrefix)
+        builder.Append(num.ToString().PadLeft(CInt(My.Settings.GS_Setting_PadLeft), CChar("0")))
+        builder.Append(ext)
+
+        While IO.File.Exists(builder.ToString())
+
+            num += 1
+            builder.Remove(0, builder.Length)
+            builder.Append(My.Settings.GS_Setting_SavePath)
+            builder.Append("\")
+            builder.Append(My.Settings.GS_Setting_FilenamePrefix)
+            builder.Append(num.ToString().PadLeft(CInt(My.Settings.GS_Setting_PadLeft), CChar("0")))
+            builder.Append(ext)
+
+        End While
+
+        myBitmap.Save(builder.ToString(), format)
+
+    End Sub
+
+    Private Sub NI_MouseClick(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles NI.MouseClick
+
+        If e.Button = Windows.Forms.MouseButtons.Left Then
+            Me.NI.ShowBalloonTip(5000)
+        End If
+
+    End Sub
+
+    Private Sub AboutGabScreenshotToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles AboutGabScreenshotToolStripMenuItem.Click
+
+        MsgBox("GabScreenshot v" & Application.ProductVersion & Environment.NewLine & Environment.NewLine & "GabSoftware (c) 2010", MsgBoxStyle.Information Or MsgBoxStyle.OkOnly, "GabScreenshot")
+
+    End Sub
+
+
+
+    <StructLayout(LayoutKind.Sequential)> _
+    Public Structure RECTW32
+        Public Left As Integer
+        Public Top As Integer
+        Public Right As Integer
+        Public Bottom As Integer
+
+        Public Sub New(ByVal pLeft As Integer, ByVal pTop As Integer, ByVal pRight As Integer, ByVal pBottom As Integer)
+            Left = pLeft
+            Top = pTop
+            Right = pRight
+            Bottom = pBottom
+        End Sub
+
+        Public ReadOnly Property Height() As Integer
+            Get
+                Return Bottom - Top
+            End Get
+        End Property
+        Public ReadOnly Property Width() As Integer
+            Get
+                Return Right - Left
+            End Get
+        End Property
+        Public ReadOnly Property Location() As Point
+            Get
+                Return New Point(Left, Top)
+            End Get
+        End Property
+        Public ReadOnly Property Size() As Size
+            Get
+                Return New Size(Width, Height)
+            End Get
+        End Property
+
+        Public Function ToRectangle() As Rectangle
+            Return Rectangle.FromLTRB(Me.Left, Me.Top, Me.Right, Me.Bottom)
+        End Function
+
+        Public Shared Function ToRectangle(ByVal sourceRect As RECTW32) As Rectangle
+            Return Rectangle.FromLTRB(sourceRect.Left, sourceRect.Top, sourceRect.Right, sourceRect.Bottom)
+        End Function
+
+        Public Shared Function FromRectangle(ByVal r As Rectangle) As RECTW32
+            Return New RECTW32(r.Left, r.Top, r.Right, r.Bottom)
+        End Function
+    End Structure
+
+    Private Sub OptionsToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OptionsToolStripMenuItem.Click
+        Dim f As New frmOptions
+        f.Show()
+    End Sub
+
+End Class
