@@ -112,38 +112,38 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NI.BalloonTipText" xml:space="preserve">
-    <value>Appuyez simultanément sur "CTRL" et "Imp écr Syst" pour faire une capture de l'écran entier, "MAJ" et "Imp écr Syst" pour capturer une région de l'écran ou "ALT" et "Imp écr Syst" pour capturer seulement la fenêtre active.</value>
+    <value>Pressez CTRL + "Impr écran Syst" pour capturer l'écran entier, MAJ + "Impr écran Syst" pour capturer une région, ou ALT + "Impr écran Syst" pour capturer la fenêtre active.</value>
   </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="AboutGabScreenshotToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>229, 22</value>
+    <value>278, 26</value>
   </data>
   <data name="AboutGabScreenshotToolStripMenuItem.Text" xml:space="preserve">
     <value>&amp;À propos de GabScreenshot...</value>
   </data>
   <data name="OptionsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>229, 22</value>
+    <value>278, 26</value>
   </data>
   <data name="OptionsToolStripMenuItem.Text" xml:space="preserve">
     <value>&amp;Préférences...</value>
   </data>
   <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>226, 6</value>
+    <value>275, 6</value>
   </data>
   <data name="ExitToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>229, 22</value>
+    <value>278, 26</value>
   </data>
   <data name="ExitToolStripMenuItem.Text" xml:space="preserve">
     <value>&amp;Quitter</value>
   </data>
   <data name="CMS.Size" type="System.Drawing.Size, System.Drawing">
-    <value>230, 76</value>
+    <value>279, 88</value>
   </data>
   <data name="NI.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

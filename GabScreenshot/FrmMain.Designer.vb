@@ -41,6 +41,7 @@ Partial Class FrmMain
         '
         'CMS
         '
+        Me.CMS.ImageScalingSize = New System.Drawing.Size(20, 20)
         Me.CMS.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AboutGabScreenshotToolStripMenuItem, Me.OptionsToolStripMenuItem, Me.ToolStripSeparator2, Me.ExitToolStripMenuItem})
         Me.CMS.Name = "CMS"
         resources.ApplyResources(Me.CMS, "CMS")
@@ -68,7 +69,7 @@ Partial Class FrmMain
         'FrmMain
         '
         resources.ApplyResources(Me, "$this")
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.ControlBox = False
         Me.DataBindings.Add(New System.Windows.Forms.Binding("Opacity", Global.GabScreenshot.My.MySettings.Default, "GS_Setting_Opacity", True, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
         Me.DoubleBuffered = True

@@ -29,7 +29,8 @@ Public Class FrmMain
     End Function
 
     Public Enum eCaptureMode
-        WholeScreen
+        AllScreens
+        CurrentScreen
         CurrentWindow
         SelectedRegion
         None
@@ -42,22 +43,24 @@ Public Class FrmMain
     Public Enum ScreenShotType
         VirtualScreen
         PrimaryScreen
+        CurrentScreen
         WorkingArea
     End Enum
 
-    'Private Const WS_EX_LAYERED = &H80000
-    'Private Const WS_EX_NOACTIVATE = &H8000000
-    'Private Const WS_EX_TOOLWINDOW = &H80
-    'Private Const WS_EX_TRANSPARENT = &H20
-    'Protected Overloads Overrides ReadOnly Property CreateParams() As CreateParams
-    '    Get
-    '        Dim baseParams As CreateParams = MyBase.CreateParams
 
-    '        'baseParams.ExStyle = baseParams.ExStyle Or CInt((WS_EX_LAYERED Or WS_EX_TRANSPARENT Or WS_EX_NOACTIVATE Or WS_EX_TOOLWINDOW))
+    Public Shared Function GetCurrentDpi() As SizeF
 
-    '        Return baseParams
-    '    End Get
-    'End Property
+        Using frm As Form = New Form()
+            Using g As Graphics = frm.CreateGraphics()
+                Dim result As SizeF = New SizeF() With {.Width = g.DpiX, .Height = g.DpiY}
+                Return result
+            End Using
+        End Using
+
+    End Function
+
+
+
 
     ''' <summary>
     ''' Effectue une capture d'écran 
@@ -65,11 +68,18 @@ Public Class FrmMain
     ''' <param name="type">Type de capture</param>
     ''' <returns>Bitmap représentant la capture d'écran</returns>
     Public Function sCapture(ByVal type As ScreenShotType) As Bitmap
-        'Dim bitmap As Bitmap = Nothing
+
         Dim rect As Rectangle
 
         Try
             Select Case type
+                Case ScreenShotType.CurrentScreen
+                    'Obtain the handle of the active window.
+                    Dim handle As IntPtr = GetForegroundWindow()
+
+                    'capture le rectangle de l'écran
+                    rect = Screen.FromHandle(handle).Bounds
+
                 Case ScreenShotType.PrimaryScreen
                     rect = Screen.PrimaryScreen.Bounds
 
@@ -77,14 +87,16 @@ Public Class FrmMain
                     rect = SystemInformation.VirtualScreen
 
                 Case ScreenShotType.WorkingArea
-                    rect = Screen.PrimaryScreen.WorkingArea
+                    'Obtain the handle of the active window.
+                    Dim handle As IntPtr = GetForegroundWindow()
+                    rect = Screen.FromHandle(handle).WorkingArea
 
                 Case Else
 
             End Select
 
             'Bitmap = sCapture(rect)
-            sCapture = sCapture(rect)
+            sCapture = scapture(rect)
         Catch ex As Exception
             Throw ex
         End Try
@@ -93,18 +105,19 @@ Public Class FrmMain
         'Return bitmap
     End Function
 
-    ''' <summary>
-    ''' Capture l'affichage de l'écran dont l'identifiant est 
-    ''' passé en paramètre
-    ''' </summary>
-    ''' <param name="screen__1">Identifiant de l'écran</param>
-    ''' <returns>Bitmap représentant la capture d'écran</returns>
-    Public Function sCaptureScreen(ByVal screen__1 As Integer) As Bitmap
-        If screen__1 > Screen.AllScreens.Length Then
-            Throw New OverflowException("Screen n°" & screen__1 & " does not exist !")
-        End If
-        Return sCapture(Screen.AllScreens(screen__1).Bounds)
-    End Function
+    '''' <summary>
+    '    ''' Capture l'affichage de l'écran dont l'identifiant est 
+    '''' passé en paramètre
+    '''' </summary>
+    '''' <param name="screen__1">Identifiant de l'écran</param>
+    '''' <returns>Bitmap représentant la capture d'écran</returns>
+    'Public Function sCaptureScreen(ByVal screen__1 As Integer) As Bitmap
+    '    If screen__1 > Screen.AllScreens.Length Then
+    '   Throw New OverflowException("Screen n°" & screen__1 & " does not exist !")
+    'End If
+    '    Return scapture(Screen.AllScreens(screen__1).Bounds)
+    'End Function
+
 
     ''' <summary>
     ''' Capture la réprésentation graphique du Control
@@ -112,7 +125,7 @@ Public Class FrmMain
     ''' <param name="control">Control à capturer</param>
     ''' <returns>Bitmap de la capture</returns>
     Public Function sCapture(ByVal control As Control) As Bitmap
-        Return sCapture(control.RectangleToScreen(control.ClientRectangle))
+        Return scapture(control.RectangleToScreen(control.ClientRectangle))
     End Function
 
     ''' <summary>
@@ -136,10 +149,10 @@ Public Class FrmMain
 
         If clientZoneOnly Then
             'bitmap = sCapture(form.RectangleToScreen(form.ClientRectangle))
-            sCapture = sCapture(form.RectangleToScreen(form.ClientRectangle))
+            sCapture = scapture(form.RectangleToScreen(form.ClientRectangle))
         Else
             'bitmap = sCapture(form.Bounds)
-            sCapture = sCapture(form.Bounds)
+            sCapture = scapture(form.Bounds)
         End If
         'Return bitmap
     End Function
@@ -151,7 +164,13 @@ Public Class FrmMain
     ''' <returns>Bitmap représentant la capture</returns>
     Private Function scapture(ByVal rect As Rectangle) As Bitmap
 
-        'Dim bitmap As New Bitmap(rect.Width, rect.Height, Imaging.PixelFormat.Format32bppArgb)
+        Dim dpi As SizeF = GetCurrentDpi()
+        Dim scale As SizeF = New SizeF() With {.Width = dpi.Width / 96.0F, .Height = dpi.Height / 96.0F}
+        rect.X = rect.X * Convert.ToInt32(Math.Round(scale.Width, 0))
+        rect.Y = rect.Y * Convert.ToInt32(Math.Round(scale.Height, 0))
+        rect.Width = rect.Width * Convert.ToInt32(Math.Round(scale.Width, 0))
+        rect.Height = rect.Height * Convert.ToInt32(Math.Round(scale.Height, 0))
+
         scapture = New Bitmap(rect.Width, rect.Height, Imaging.PixelFormat.Format32bppArgb)
 
         'Using g As Graphics = Graphics.FromImage(Bitmap)
@@ -175,6 +194,14 @@ Public Class FrmMain
         scapture = New Bitmap(1, 1)
         If GetWindowRect(hwnd, win32rect) Then
             rect = win32rect.ToRectangle()
+
+            Dim dpi As SizeF = GetCurrentDpi()
+            Dim scale As SizeF = New SizeF() With {.Width = dpi.Width / 96.0F, .Height = dpi.Height / 96.0F}
+            rect.X = rect.X * Convert.ToInt32(Math.Round(scale.Width, 0))
+            rect.Y = rect.Y * Convert.ToInt32(Math.Round(scale.Height, 0))
+            rect.Width = rect.Width * Convert.ToInt32(Math.Round(scale.Width, 0))
+            rect.Height = rect.Height * Convert.ToInt32(Math.Round(scale.Height, 0))
+
             'bitmap = New Bitmap(rect.Width, rect.Height, Imaging.PixelFormat.Format32bppArgb)
             'Dim g As Graphics = Graphics.FromImage(Bitmap)
             scapture = New Bitmap(rect.Width, rect.Height, Imaging.PixelFormat.Format32bppArgb)
@@ -343,7 +370,7 @@ Public Class FrmMain
                 'on a un rectangle à capturer !
 
                 'On capture la portion de l'écran dans un bitmap
-                Dim objBitmap As Bitmap = sCapture(rect)
+                Dim objBitmap As Bitmap = scapture(rect)
 
                 'Enregistre le bitmap dans un fichier
                 Save(objBitmap)
@@ -386,21 +413,61 @@ Public Class FrmMain
             Exit Sub
         End If
 
-        If touche.KeyCode = Keys.PrintScreen And touche.Shift Then
-            'on active le mode sélection de portion de l'écran
+
+        'écran courant
+        If touche.KeyCode = Keys.PrintScreen _
+            And touche.Control _
+            And touche.Shift Then
+
+            CaptureMode = eCaptureMode.CurrentScreen
+            touche.Handled = True
+
+            'capture l'écran dans un bitmap
+            Dim objBitmap As Bitmap = sCapture(ScreenShotType.CurrentScreen)
+
+            'Enregistre le bitmap dans un fichier
+            Save(objBitmap)
+
+            objBitmap.Dispose()
+
+
+            'ecran courant sans barre des tâches
+        ElseIf touche.KeyCode = Keys.PrintScreen _
+            And touche.Control _
+            And touche.Alt Then
+
+            CaptureMode = eCaptureMode.CurrentScreen
+            touche.Handled = True
+
+            'capture l'écran dans un bitmap
+            Dim objBitmap As Bitmap = sCapture(ScreenShotType.WorkingArea)
+
+            'Enregistre le bitmap dans un fichier
+            Save(objBitmap)
+
+            objBitmap.Dispose()
+
+
+
+
+            'portion de l'écran
+        ElseIf touche.KeyCode = Keys.PrintScreen And touche.Shift Then
+
             Me.Show()
             CaptureMode = eCaptureMode.SelectedRegion
             touche.Handled = True
             Cursor = Cursors.Cross
 
+
+            'fenêtre en cours
         ElseIf touche.KeyCode = Keys.PrintScreen And touche.Alt Then
-            'on ne capture que la fenêtre en cours
+
             CaptureMode = eCaptureMode.CurrentWindow
 
             'Obtain the handle of the active window.
             Dim handle As IntPtr = GetForegroundWindow()
 
-            Dim objBitmap As Bitmap = sCapture(handle)
+            Dim objBitmap As Bitmap = scapture(handle)
 
             'Enregistre le bitmap dans un fichier
             Save(objBitmap)
@@ -408,12 +475,14 @@ Public Class FrmMain
 
             touche.Handled = True
 
+
+            'tous les écrans
         ElseIf touche.KeyCode = Keys.PrintScreen And touche.Control Then
-            CaptureMode = eCaptureMode.WholeScreen
+            CaptureMode = eCaptureMode.AllScreens
             touche.Handled = True
 
             'capture le rectangle de l'écran
-            Dim objRectangle As Rectangle = Screen.PrimaryScreen.Bounds
+            'Dim objRectangle As Rectangle = Screen.PrimaryScreen.Bounds
 
             'capture l'écran dans un bitmap
             Dim objBitmap As Bitmap = sCapture(ScreenShotType.VirtualScreen)
@@ -519,7 +588,10 @@ Public Class FrmMain
 
         End While
 
+        Dim dpi As SizeF = GetCurrentDpi()
+        myBitmap.SetResolution(dpi.Width, dpi.Height)
         myBitmap.Save(builder.ToString(), format)
+
 
     End Sub
 
