@@ -1,8 +1,6 @@
 ﻿Imports GabSoftware.Utils
 Imports System.Runtime.InteropServices
-Imports System.Threading
 Imports System.Text
-Imports System.Diagnostics
 
 Public Class FrmMain
 
@@ -12,13 +10,15 @@ Public Class FrmMain
     ''' <remarks></remarks>
     Friend WithEvents keyHook As GabKeyboardHook
 
-    Private firstPosition As Point
-    Private lastPosition As Point
+    Private firstPosition As Point?
+    Private lastPosition As Point?
     Private rect As Rectangle
 
     Private bg As BufferedGraphics
     Private bgc As New BufferedGraphicsContext()
     Private g1 As Graphics
+
+    Private currentScreen As Screen
 
     <DllImport("user32.dll", SetLastError:=True)> _
     Private Shared Function GetForegroundWindow() As IntPtr
@@ -175,7 +175,8 @@ Public Class FrmMain
 
         'Using g As Graphics = Graphics.FromImage(Bitmap)
         Using g As Graphics = Graphics.FromImage(scapture)
-            g.CopyFromScreen(rect.Left, rect.Top, 0, 0, rect.Size, CopyPixelOperation.SourceCopy)
+            'g.CopyFromScreen(rect.Left, rect.Top, 0, 0, rect.Size, CopyPixelOperation.SourceCopy)
+            g.CopyFromScreen(GetX(rect.Left), GetY(rect.Top), 0, 0, rect.Size, CopyPixelOperation.SourceCopy)
         End Using
 
         'Return Bitmap
@@ -243,6 +244,22 @@ Public Class FrmMain
             My.Settings.Save()
         End If
 
+
+
+        Dim screens = Screen.AllScreens
+        currentScreen = getPrimaryMonitor()
+
+        Me.WindowState = FormWindowState.Normal
+        Me.ClientSize = New Size(500, 500)
+        Application.DoEvents()
+        Me.StartPosition = FormStartPosition.Manual
+        Me.Left = currentScreen.Bounds.Left
+        Me.Top = currentScreen.Bounds.Top
+        Me.WindowState = FormWindowState.Normal
+        Me.WindowState = FormWindowState.Maximized
+
+
+
     End Sub
 
     Private Sub ExitToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ExitToolStripMenuItem.Click
@@ -259,16 +276,18 @@ Public Class FrmMain
 
         Me.SetStyle(ControlStyles.OptimizedDoubleBuffer, True)
 
+        Me.g1 = Me.CreateGraphics()
+
+
+
     End Sub
 
     Private Sub FrmMain_MouseDown(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseDown
 
-        If CaptureMode = eCaptureMode.SelectedRegion AndAlso e.Button = Windows.Forms.MouseButtons.Left AndAlso firstPosition = Nothing Then
-            'If firstPosition = Nothing Then
+        If CaptureMode = eCaptureMode.SelectedRegion AndAlso e.Button = Windows.Forms.MouseButtons.Left AndAlso firstPosition.HasValue = False Then
 
-            firstPosition = Me.PointToScreen(e.Location)
+            firstPosition = e.Location
 
-            'End If
         End If
 
 
@@ -276,8 +295,6 @@ Public Class FrmMain
 
     Private Sub FrmMain_MouseMove(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles Me.MouseMove
 
-        Dim tmppt As Point
-        'Dim effacerect As Rectangle
         Dim strbld As StringBuilder
         Dim strres As String
         Dim textsizef As SizeF
@@ -286,58 +303,45 @@ Public Class FrmMain
 
         If CaptureMode = eCaptureMode.SelectedRegion And e.Button = Windows.Forms.MouseButtons.Left Then
 
+            If lastPosition.HasValue() Then
 
-            If lastPosition <> Nothing Then
-
-                tmppt = Me.PointToScreen(e.Location)
-
-                If lastPosition.X <> tmppt.X Or lastPosition.Y <> tmppt.Y Then
-
-                    lastPosition = New Point(tmppt.X, tmppt.Y)
-
+                If lastPosition.Value.X <> e.Location.X Or lastPosition.Value.Y <> e.Location.Y Then
+                    lastPosition = New Point(e.Location.X, e.Location.Y)
                 Else
                     Exit Sub
                 End If
             Else
 
-                lastPosition = Me.PointToScreen(e.Location)
+                lastPosition = e.Location
 
             End If
 
 
 
-            If firstPosition <> Nothing Then
+            If firstPosition.HasValue() Then
 
-                If lastPosition.X > firstPosition.X Then
-                    If lastPosition.Y > firstPosition.Y Then
-                        rect = New Rectangle(firstPosition.X, firstPosition.Y, lastPosition.X - firstPosition.X, lastPosition.Y - firstPosition.Y)
+                If lastPosition.Value.X > firstPosition.Value.X Then
+                    If lastPosition.Value.Y > firstPosition.Value.Y Then
+                        rect = New Rectangle(firstPosition.Value.X, firstPosition.Value.Y, lastPosition.Value.X - firstPosition.Value.X, lastPosition.Value.Y - firstPosition.Value.Y)
                     Else
-                        rect = New Rectangle(firstPosition.X, lastPosition.Y, lastPosition.X - firstPosition.X, firstPosition.Y - lastPosition.Y)
+                        rect = New Rectangle(firstPosition.Value.X, lastPosition.Value.Y, lastPosition.Value.X - firstPosition.Value.X, firstPosition.Value.Y - lastPosition.Value.Y)
                     End If
                 Else
-                    If lastPosition.Y > firstPosition.Y Then
-                        rect = New Rectangle(lastPosition.X, firstPosition.Y, firstPosition.X - lastPosition.X, lastPosition.Y - firstPosition.Y)
+                    If lastPosition.Value.Y > firstPosition.Value.Y Then
+                        rect = New Rectangle(lastPosition.Value.X, firstPosition.Value.Y, firstPosition.Value.X - lastPosition.Value.X, lastPosition.Value.Y - firstPosition.Value.Y)
                     Else
-                        rect = New Rectangle(lastPosition.X, lastPosition.Y, firstPosition.X - lastPosition.X, firstPosition.Y - lastPosition.Y)
+                        rect = New Rectangle(lastPosition.Value.X, lastPosition.Value.Y, firstPosition.Value.X - lastPosition.Value.X, firstPosition.Value.Y - lastPosition.Value.Y)
                     End If
                 End If
-
-
-                'effacerect = New Rectangle(rect.X - 40, rect.Y - 40, rect.Width + 80, rect.Height + 80)
-
-                'Dim g1 As Graphics
-
-
 
                 strbld = New StringBuilder(rect.Width.ToString())
                 strbld.Append("x")
                 strbld.Append(rect.Height)
                 strres = strbld.ToString()
 
-                g1 = Graphics.FromHwnd(Me.Handle)
+                bg = bgc.Allocate(g1, New Rectangle(0, 0, currentScreen.Bounds.Width, currentScreen.Bounds.Height))
 
-                bg = bgc.Allocate(g1, Me.Bounds)
-                bg.Graphics.FillRectangle(New SolidBrush(Me.BackColor), Me.Bounds)
+                bg.Graphics.FillRectangle(New SolidBrush(Me.BackColor), New Rectangle(0, 0, currentScreen.Bounds.Width, currentScreen.Bounds.Height))
                 bg.Graphics.DrawRectangle(New Pen(Color.Black, 2), rect)
                 bg.Graphics.FillRectangle(Brushes.Red, rect)
 
@@ -350,8 +354,6 @@ Public Class FrmMain
 
                 bg.Render()
                 bg.Dispose()
-
-                g1.Dispose()
 
             End If
         End If
@@ -366,7 +368,7 @@ Public Class FrmMain
             Me.Invalidate()
             Me.Hide()
 
-            If firstPosition <> Nothing And lastPosition <> Nothing Then
+            If firstPosition.HasValue() AndAlso lastPosition.HasValue() Then
                 'on a un rectangle à capturer !
 
                 'On capture la portion de l'écran dans un bitmap
@@ -376,7 +378,6 @@ Public Class FrmMain
                 Save(objBitmap)
 
                 objBitmap.Dispose()
-
 
             End If
             Cursor = Cursors.Default
@@ -403,16 +404,29 @@ Public Class FrmMain
 
     Private Sub SetKeyboardActions(ByVal touche As System.Windows.Forms.KeyEventArgs, ByVal hasFocus As Boolean)
 
-
+        ' si on est en train de capturer une zone d'écran
         If CaptureMode = eCaptureMode.SelectedRegion Then
-            CaptureMode = eCaptureMode.None
-            lastPosition = Nothing
-            firstPosition = Nothing
-            Cursor = Cursors.Default
-            Me.Hide()
-            Exit Sub
-        End If
 
+            If touche.KeyCode = Keys.Escape Then
+                CaptureMode = eCaptureMode.None
+                lastPosition = Nothing
+                firstPosition = Nothing
+                Cursor = Cursors.Default
+                Me.Hide()
+                Exit Sub
+            ElseIf touche.KeyCode = Keys.Space Or touche.KeyCode = Keys.Tab Then
+                currentScreen = getNextMonitor()
+                Me.WindowState = FormWindowState.Normal
+                Me.ClientSize = New Size(500, 500)
+                Application.DoEvents()
+                Me.StartPosition = FormStartPosition.Manual
+                Me.Left = currentScreen.Bounds.Left
+                Me.Top = currentScreen.Bounds.Top
+                Me.WindowState = FormWindowState.Normal
+                Me.WindowState = FormWindowState.Maximized
+            End If
+
+        End If
 
         'écran courant
         If touche.KeyCode = Keys.PrintScreen _
@@ -454,9 +468,20 @@ Public Class FrmMain
         ElseIf touche.KeyCode = Keys.PrintScreen And touche.Shift Then
 
             Me.Show()
+
             CaptureMode = eCaptureMode.SelectedRegion
             touche.Handled = True
             Cursor = Cursors.Cross
+
+            currentScreen = getPrimaryMonitor()
+            Me.WindowState = FormWindowState.Normal
+            Me.ClientSize = New Size(500, 500)
+            Application.DoEvents()
+            Me.StartPosition = FormStartPosition.Manual
+            Me.Left = currentScreen.Bounds.Left
+            Me.Top = currentScreen.Bounds.Top
+            Me.WindowState = FormWindowState.Normal
+            Me.WindowState = FormWindowState.Maximized
 
 
             'fenêtre en cours
@@ -664,4 +689,69 @@ Public Class FrmMain
         f.Show()
     End Sub
 
+
+    Private Function getNextMonitor() As Screen
+
+        Dim index As Integer = 0
+        Dim screens As Screen() = Screen.AllScreens
+
+        For Each screen As Screen In screens
+            If screen.Bounds.Left = Me.Left Then
+                index += 1
+            Else
+                Exit For
+            End If
+        Next
+
+        If index > screens.Length Then
+            index = 0
+        End If
+
+        Return screens(index)
+
+    End Function
+
+    Private Function getPrimaryMonitor() As Screen
+        Dim index As Integer = 0
+        Dim screens As Screen() = Screen.AllScreens
+
+        For Each screen As Screen In screens
+            If screen.Bounds.Left = Screen.PrimaryScreen.Bounds.Left Then
+                Exit For
+            Else
+                index += 1
+            End If
+        Next
+
+        If index > screens.Length Then
+            index = 0
+        End If
+
+        Return screens(index)
+
+    End Function
+
+    Private Function GetX(X As Integer) As Integer
+        If Me.Left = 0 Then
+            Return X
+        ElseIf Me.Left < 0 Then
+            Return X - Math.Abs(Me.Left)
+        Else
+            Return X + Me.Left
+        End If
+    End Function
+
+    Private Function GetY(Y As Integer) As Integer
+        If Me.Top = 0 Then
+            Return Y
+        ElseIf Me.Top < 0 Then
+            Return Y - Math.Abs(Me.Top)
+        Else
+            Return Y + Me.Top
+        End If
+    End Function
+
+    Private Sub HelpToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles HelpToolStripMenuItem.Click
+        MsgBox(NI.BalloonTipText, MsgBoxStyle.OkOnly, HelpToolStripMenuItem.Text.Replace("&", ""))
+    End Sub
 End Class

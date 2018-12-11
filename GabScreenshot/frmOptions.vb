@@ -1,5 +1,4 @@
-﻿Imports System.Windows.Forms
-Imports Microsoft.Win32
+﻿Imports Microsoft.Win32
 
 Public Class frmOptions
 

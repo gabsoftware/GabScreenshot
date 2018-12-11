@@ -28,6 +28,8 @@ Partial Class FrmMain
         Me.CMS = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.AboutGabScreenshotToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.OptionsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
+        Me.HelpToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
         Me.ExitToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.CMS.SuspendLayout()
@@ -41,30 +43,40 @@ Partial Class FrmMain
         '
         'CMS
         '
-        Me.CMS.ImageScalingSize = New System.Drawing.Size(20, 20)
-        Me.CMS.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AboutGabScreenshotToolStripMenuItem, Me.OptionsToolStripMenuItem, Me.ToolStripSeparator2, Me.ExitToolStripMenuItem})
-        Me.CMS.Name = "CMS"
         resources.ApplyResources(Me.CMS, "CMS")
+        Me.CMS.ImageScalingSize = New System.Drawing.Size(20, 20)
+        Me.CMS.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.AboutGabScreenshotToolStripMenuItem, Me.OptionsToolStripMenuItem, Me.ToolStripSeparator1, Me.HelpToolStripMenuItem, Me.ToolStripSeparator2, Me.ExitToolStripMenuItem})
+        Me.CMS.Name = "CMS"
         '
         'AboutGabScreenshotToolStripMenuItem
         '
-        Me.AboutGabScreenshotToolStripMenuItem.Name = "AboutGabScreenshotToolStripMenuItem"
         resources.ApplyResources(Me.AboutGabScreenshotToolStripMenuItem, "AboutGabScreenshotToolStripMenuItem")
+        Me.AboutGabScreenshotToolStripMenuItem.Name = "AboutGabScreenshotToolStripMenuItem"
         '
         'OptionsToolStripMenuItem
         '
-        Me.OptionsToolStripMenuItem.Name = "OptionsToolStripMenuItem"
         resources.ApplyResources(Me.OptionsToolStripMenuItem, "OptionsToolStripMenuItem")
+        Me.OptionsToolStripMenuItem.Name = "OptionsToolStripMenuItem"
+        '
+        'ToolStripSeparator1
+        '
+        resources.ApplyResources(Me.ToolStripSeparator1, "ToolStripSeparator1")
+        Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
+        '
+        'HelpToolStripMenuItem
+        '
+        resources.ApplyResources(Me.HelpToolStripMenuItem, "HelpToolStripMenuItem")
+        Me.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem"
         '
         'ToolStripSeparator2
         '
-        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
         resources.ApplyResources(Me.ToolStripSeparator2, "ToolStripSeparator2")
+        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
         '
         'ExitToolStripMenuItem
         '
-        Me.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem"
         resources.ApplyResources(Me.ExitToolStripMenuItem, "ExitToolStripMenuItem")
+        Me.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem"
         '
         'FrmMain
         '
@@ -79,7 +91,7 @@ Partial Class FrmMain
         Me.ShowIcon = False
         Me.ShowInTaskbar = False
         Me.TopMost = True
-        Me.WindowState = System.Windows.Forms.FormWindowState.Maximized
+        Me.WindowState = System.Windows.Forms.FormWindowState.Minimized
         Me.CMS.ResumeLayout(False)
         Me.ResumeLayout(False)
 
@@ -90,5 +102,6 @@ Partial Class FrmMain
     Friend WithEvents AboutGabScreenshotToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents OptionsToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents ToolStripSeparator2 As System.Windows.Forms.ToolStripSeparator
-
+    Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
+    Friend WithEvents HelpToolStripMenuItem As ToolStripMenuItem
 End Class

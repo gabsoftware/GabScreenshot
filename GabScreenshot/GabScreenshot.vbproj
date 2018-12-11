@@ -12,7 +12,7 @@
     <AssemblyName>GabScreenshot</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>WindowsForms</MyType>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <OptionExplicit>On</OptionExplicit>
     <OptionCompare>Binary</OptionCompare>
     <OptionStrict>On</OptionStrict>
@@ -76,9 +76,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
@@ -183,7 +181,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\GabKeyboardHook\GabKeyboardHook.csproj">
-      <Project>{f52aa97e-180a-40ed-8f2b-09080171d6c7}</Project>
+      <Project>{8f4c1c52-76c8-4018-bc0f-9e6b9c03a827}</Project>
       <Name>GabKeyboardHook</Name>
     </ProjectReference>
   </ItemGroup>

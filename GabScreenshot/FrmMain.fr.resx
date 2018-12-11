@@ -118,32 +118,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NI.BalloonTipText" xml:space="preserve">
-    <value>Pressez CTRL + "Impr écran Syst" pour capturer l'écran entier, MAJ + "Impr écran Syst" pour capturer une région, ou ALT + "Impr écran Syst" pour capturer la fenêtre active.</value>
+    <value>CTRL + "Impr écran Syst" pour capturer l'écran entier
+
+MAJ + "Impr écran Syst" pour sélectionner la zone à capturer (TAB pour changer d'écran, Echap pour annuler)
+
+ALT + "Impr écran Syst" pour capturer la fenêtre active</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="AboutGabScreenshotToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>278, 26</value>
-  </data>
-  <data name="AboutGabScreenshotToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;À propos de GabScreenshot...</value>
-  </data>
-  <data name="OptionsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>278, 26</value>
-  </data>
-  <data name="OptionsToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;Préférences...</value>
-  </data>
-  <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>275, 6</value>
-  </data>
-  <data name="ExitToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>278, 26</value>
-  </data>
-  <data name="ExitToolStripMenuItem.Text" xml:space="preserve">
-    <value>&amp;Quitter</value>
-  </data>
   <data name="CMS.Size" type="System.Drawing.Size, System.Drawing">
-    <value>279, 88</value>
+    <value>230, 104</value>
   </data>
   <data name="NI.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -523,5 +506,35 @@
         AAAzMzMgMzMzQGJiYoB9fX2fgYGBv3d3d6+Li4uAMzMzQDMzMxA7Jx0VgAMzv4AA0P+AALD/AACd/wAA
         uP8AAMD/AACp/wAA2P8AANj/AACq/wAAxP8AAOH/AAD3/wAAkP+AAOz//ADs/w==
 </value>
+  </data>
+  <data name="AboutGabScreenshotToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>229, 22</value>
+  </data>
+  <data name="AboutGabScreenshotToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;À propos de GabScreenshot...</value>
+  </data>
+  <data name="OptionsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>229, 22</value>
+  </data>
+  <data name="OptionsToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Préférences...</value>
+  </data>
+  <data name="ToolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>226, 6</value>
+  </data>
+  <data name="HelpToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>229, 22</value>
+  </data>
+  <data name="HelpToolStripMenuItem.Text" xml:space="preserve">
+    <value>A&amp;ide</value>
+  </data>
+  <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>226, 6</value>
+  </data>
+  <data name="ExitToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>229, 22</value>
+  </data>
+  <data name="ExitToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Quitter</value>
   </data>
 </root>
