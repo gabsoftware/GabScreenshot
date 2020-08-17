@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("Screenshot helper")>
 <Assembly: AssemblyCompany("GabSoftware")> 
 <Assembly: AssemblyProduct("GabScreenshot")>
-<Assembly: AssemblyCopyright("Copyright © GabSoftware 2018")>
+<Assembly: AssemblyCopyright("Copyright © GabSoftware 2020")>
 <Assembly: AssemblyTrademark("GabSoftware and GabScreenshot are registered trademarks of the GabSoftware Corporation")> 
 
 <Assembly: ComVisible(False)>
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("1.0.0.3")>
-<Assembly: AssemblyFileVersion("1.0.0.3")>
+<Assembly: AssemblyVersion("1.0.0.4")>
+<Assembly: AssemblyFileVersion("1.0.0.4")>
