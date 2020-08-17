@@ -19,6 +19,7 @@ Public Class FrmMain
     Private g1 As Graphics
 
     Private currentScreen As Screen
+    Private currentScreenIndex As Integer = 0
 
     <DllImport("user32.dll", SetLastError:=True)> _
     Private Shared Function GetForegroundWindow() As IntPtr
@@ -244,10 +245,8 @@ Public Class FrmMain
             My.Settings.Save()
         End If
 
-
-
-        Dim screens = Screen.AllScreens
         currentScreen = getPrimaryMonitor()
+        currentScreenIndex = getPrimaryMonitorIndex()
 
         Me.WindowState = FormWindowState.Normal
         Me.ClientSize = New Size(500, 500)
@@ -257,8 +256,6 @@ Public Class FrmMain
         Me.Top = currentScreen.Bounds.Top
         Me.WindowState = FormWindowState.Normal
         Me.WindowState = FormWindowState.Maximized
-
-
 
     End Sub
 
@@ -473,7 +470,7 @@ Public Class FrmMain
             touche.Handled = True
             Cursor = Cursors.Cross
 
-            currentScreen = getPrimaryMonitor()
+            currentScreen = getCurrentScreen()
             Me.WindowState = FormWindowState.Normal
             Me.ClientSize = New Size(500, 500)
             Application.DoEvents()
@@ -692,22 +689,13 @@ Public Class FrmMain
 
     Private Function getNextMonitor() As Screen
 
-        Dim index As Integer = 0
         Dim screens As Screen() = Screen.AllScreens
-
-        For Each screen As Screen In screens
-            If screen.Bounds.Left = Me.Left Then
-                index += 1
-            Else
-                Exit For
-            End If
-        Next
-
-        If index > screens.Length Then
-            index = 0
+        Me.currentScreenIndex += 1
+        If currentScreenIndex >= screens.Length Then
+            currentScreenIndex = 0
         End If
 
-        Return screens(index)
+        Return screens(currentScreenIndex)
 
     End Function
 
@@ -723,11 +711,43 @@ Public Class FrmMain
             End If
         Next
 
-        If index > screens.Length Then
+        If index >= screens.Length Then
             index = 0
         End If
 
         Return screens(index)
+
+    End Function
+
+    Private Function getPrimaryMonitorIndex() As Integer
+        Dim index As Integer = 0
+        Dim screens As Screen() = Screen.AllScreens
+
+        For Each screen As Screen In screens
+            If screen.Bounds.Left = Screen.PrimaryScreen.Bounds.Left Then
+                Exit For
+            Else
+                index += 1
+            End If
+        Next
+
+        If index >= screens.Length Then
+            index = 0
+        End If
+
+        Return index
+
+    End Function
+
+    Private Function getCurrentScreen() As Screen
+
+        Dim screens As Screen() = Screen.AllScreens
+
+        If Me.currentScreenIndex >= screens.Length Then
+            Me.currentScreenIndex = 0
+        End If
+
+        Return screens(currentScreenIndex)
 
     End Function
 
